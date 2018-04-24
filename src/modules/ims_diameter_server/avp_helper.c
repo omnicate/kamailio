@@ -360,15 +360,17 @@ void parselist(AAAMessage *response, AAA_AVP_LIST *list, cJSON * item, int level
 			 cJSON_GetObjectItem(item,"vendorId")->valueint, AVP_DUPLICATE_DATA, __FUNCTION__);
 		}
 	} else if (cJSON_GetObjectItem(item,HEXDUMP)) {
+                char * binary_form = parse_hexdump(cJSON_GetObjectItem(item,HEXDUMP)->valuestring);
 		if (list) {
-                        diameterserver_add_avp_list(list, parse_hexdump(cJSON_GetObjectItem(item,HEXDUMP)->valuestring),
+                        diameterserver_add_avp_list(list, binary_form,
 			 strlen(cJSON_GetObjectItem(item,HEXDUMP)->valuestring) / 2, cJSON_GetObjectItem(item,"avpCode")->valueint, flags,
-			 cJSON_GetObjectItem(item,"vendorId")->valueint, AVP_FREE_DATA, __FUNCTION__);
+			 cJSON_GetObjectItem(item,"vendorId")->valueint, AVP_DUPLICATE_DATA, __FUNCTION__);
 		} else {
-                        diameterserver_add_avp(response, parse_hexdump(cJSON_GetObjectItem(item,HEXDUMP)->valuestring),
+                        diameterserver_add_avp(response, binary_form,
 			 strlen(cJSON_GetObjectItem(item,HEXDUMP)->valuestring) / 2, cJSON_GetObjectItem(item,"avpCode")->valueint, flags,
-			 cJSON_GetObjectItem(item,"vendorId")->valueint, AVP_FREE_DATA, __FUNCTION__);
+			 cJSON_GetObjectItem(item,"vendorId")->valueint, AVP_DUPLICATE_DATA, __FUNCTION__);
 		}
+                free(binary_form);
 	} else {
 		LM_WARN("Not a string, int32, list, hexdump? Invalid field definition... (%i:%i)\n",
 			cJSON_GetObjectItem(item,"avpCode")->valueint, cJSON_GetObjectItem(item,"vendorId")->valueint);
