@@ -110,7 +110,7 @@ cJSON * avp2json(AAA_AVP *avp_t) {
 		case AAA_AVP_DATA_TYPE:
 			l = 0;
 			for (i=0; i < avp_t->data.len; i++) {
-				l+=snprintf(dest+l,STRSIZE-l-1,"%x", ((unsigned char*)avp_t->data.s)[i]);
+				l+=snprintf(dest+l,STRSIZE-l-1,"%02x", ((unsigned char*)avp_t->data.s)[i]);
 			}
 			cJSON_AddStringToObject(avp, "data", dest);
 			if (avp_t->data.len == 4) {
