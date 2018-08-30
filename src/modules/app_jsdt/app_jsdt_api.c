@@ -770,6 +770,7 @@ int app_jsdt_run_ex(sip_msg_t *msg, char *func, char *p1, char *p2,
 	int ret;
 	str txt;
 	sip_msg_t *bmsg;
+	duk_idx_t jtop;
 
 	if(_sr_J_env.JJ==NULL) {
 		LM_ERR("js loading state not initialized (call: %s)\n", func);
@@ -779,7 +780,8 @@ int app_jsdt_run_ex(sip_msg_t *msg, char *func, char *p1, char *p2,
 	jsdt_kemi_reload_script();
 
 	LM_DBG("executing js function: [[%s]]\n", func);
-	LM_DBG("js top index is: %d\n", duk_get_top(_sr_J_env.JJ));
+	jtop = duk_get_top(_sr_J_env.JJ);
+	LM_DBG("js top index is: %d\n", (int)jtop);
 	duk_get_global_string(_sr_J_env.JJ, func);
 	if(!duk_is_function(_sr_J_env.JJ, -1))
 	{
@@ -789,8 +791,10 @@ int app_jsdt_run_ex(sip_msg_t *msg, char *func, char *p1, char *p2,
 				duk_get_type(_sr_J_env.JJ, -1));
 			txt.s = (char*)duk_to_string(_sr_J_env.JJ, -1);
 			LM_ERR("error from JS: %s\n", (txt.s)?txt.s:"unknown");
+			duk_set_top(_sr_J_env.JJ, jtop);
 			return -1;
 		} else {
+			duk_set_top(_sr_J_env.JJ, jtop);
 			return 1;
 		}
 	}
@@ -840,15 +844,16 @@ int app_jsdt_run_ex(sip_msg_t *msg, char *func, char *p1, char *p2,
 				LM_ERR("error from js: unknown\n");
 			}
 		}
-		duk_pop(_sr_J_env.JJ);
 		if(n==1) {
+			duk_set_top(_sr_J_env.JJ, jtop);
 			return 1;
 		} else {
 			LM_ERR("error executing: %s (err: %d)\n", func, ret);
+			duk_set_top(_sr_J_env.JJ, jtop);
 			return -1;
 		}
 	}
-	duk_pop(_sr_J_env.JJ);
+	duk_set_top(_sr_J_env.JJ, jtop);
 
 	return 1;
 }
@@ -1141,12 +1146,40 @@ int sr_kemi_jsdt_exec_func_ex(duk_context *J, sr_kemi_t *ket)
 				ret = ((sr_kemi_fmssnn_f)(ket->func))(env_J->msg,
 						&vps[0].s, &vps[1].s, vps[2].n, vps[3].n);
 				return sr_kemi_jsdt_return_int(J, ket, ret);
+			} else if(ket->ptypes[0]==SR_KEMIP_STR
+					&& ket->ptypes[1]==SR_KEMIP_INT
+					&& ket->ptypes[2]==SR_KEMIP_INT
+					&& ket->ptypes[3]==SR_KEMIP_INT) {
+				ret = ((sr_kemi_fmsnnn_f)(ket->func))(env_J->msg,
+						&vps[0].s, vps[1].n, vps[2].n, vps[3].n);
+				return sr_kemi_jsdt_return_int(J, ket, ret);
 			} else if(ket->ptypes[0]==SR_KEMIP_INT
 					&& ket->ptypes[1]==SR_KEMIP_STR
 					&& ket->ptypes[2]==SR_KEMIP_STR
 					&& ket->ptypes[3]==SR_KEMIP_STR) {
 				ret = ((sr_kemi_fmnsss_f)(ket->func))(env_J->msg,
 						vps[0].n, &vps[1].s, &vps[2].s, &vps[3].s);
+				return sr_kemi_jsdt_return_int(J, ket, ret);
+			} else if(ket->ptypes[0]==SR_KEMIP_INT
+					&& ket->ptypes[1]==SR_KEMIP_INT
+					&& ket->ptypes[2]==SR_KEMIP_STR
+					&& ket->ptypes[3]==SR_KEMIP_STR) {
+				ret = ((sr_kemi_fmnnss_f)(ket->func))(env_J->msg,
+						vps[0].n, vps[1].n, &vps[2].s, &vps[3].s);
+				return sr_kemi_jsdt_return_int(J, ket, ret);
+			} else if(ket->ptypes[0]==SR_KEMIP_INT
+					&& ket->ptypes[1]==SR_KEMIP_INT
+					&& ket->ptypes[2]==SR_KEMIP_INT
+					&& ket->ptypes[3]==SR_KEMIP_STR) {
+				ret = ((sr_kemi_fmnnns_f)(ket->func))(env_J->msg,
+						vps[0].n, vps[1].n, vps[2].n, &vps[3].s);
+				return sr_kemi_jsdt_return_int(J, ket, ret);
+			} else if(ket->ptypes[0]==SR_KEMIP_INT
+					&& ket->ptypes[1]==SR_KEMIP_INT
+					&& ket->ptypes[2]==SR_KEMIP_INT
+					&& ket->ptypes[3]==SR_KEMIP_INT) {
+				ret = ((sr_kemi_fmnnnn_f)(ket->func))(env_J->msg,
+						vps[0].n, vps[1].n, vps[2].n, vps[3].n);
 				return sr_kemi_jsdt_return_int(J, ket, ret);
 			} else {
 				LM_ERR("invalid parameters for: %.*s\n",

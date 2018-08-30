@@ -1,5 +1,5 @@
 %define name    kamailio
-%define ver 5.1.4
+%define ver 5.1.5
 %define rel 0%{dist}
 
 %if 0%{?fedora} == 25
@@ -567,8 +567,8 @@ Requires:   kamailio = %ver
 Requires:   perl
 BuildRequires:  perl
 %else
-Requires:   mod_perl
-BuildRequires:  mod_perl-devel
+Requires:   perl-libs
+BuildRequires:  perl-ExtUtils-Embed
 %endif
 
 %description    perl
