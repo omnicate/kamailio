@@ -69,8 +69,9 @@ int lookup(struct sip_msg* _m, udomain_t* _d, char* ue_type_c) {
     flag_t old_bflags;
     int i = 0;
     int ue_type;    /*0=any, 1=3gpp, 2=sip */
-	impu_contact_t *impucontact;
-
+    impu_contact_t *impucontact;
+    char aor_buf[1024];
+    
     if (!_m) {
         LM_ERR("NULL message!!!\n");
         return -1;
@@ -94,6 +95,13 @@ int lookup(struct sip_msg* _m, udomain_t* _d, char* ue_type_c) {
     if (_m->new_uri.s) aor = _m->new_uri;
     else aor = _m->first_line.u.request.uri;
 
+    if (aor.len > sizeof(aor_buf)) {
+        LM_ERR("AOR is too long\n");
+        return -1;
+    }
+    memcpy(aor_buf, aor.s, aor.len);
+    aor.s = aor_buf;
+    
     for (i = 4; i < aor.len; i++)
         if (aor.s[i] == ':' || aor.s[i] == ';' || aor.s[i] == '?') {
             aor.len = i;
