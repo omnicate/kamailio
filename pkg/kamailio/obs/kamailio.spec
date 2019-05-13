@@ -1,46 +1,6 @@
 %define name    kamailio
-%define ver 5.1.5
+%define ver 5.1.8
 %define rel 0%{dist}
-
-%if 0%{?fedora} == 25
-%define dist_name fedora
-%define dist_version %{?fedora}
-%bcond_without cnxcc
-%bcond_with dnssec
-%bcond_without geoip
-%bcond_without http_async_client
-%bcond_without jansson
-%bcond_without json
-%bcond_without lua
-%bcond_without kazoo
-%bcond_without memcached
-%bcond_without perl
-%bcond_without rebbitmq
-%bcond_without redis
-%bcond_without sctp
-%bcond_without websocket
-%bcond_without xmlrpc
-%endif
-
-%if 0%{?fedora} == 26
-%define dist_name fedora
-%define dist_version %{?fedora}
-%bcond_without cnxcc
-%bcond_with dnssec
-%bcond_without geoip
-%bcond_without http_async_client
-%bcond_without jansson
-%bcond_without json
-%bcond_without lua
-%bcond_without kazoo
-%bcond_without memcached
-%bcond_without perl
-%bcond_without rebbitmq
-%bcond_without redis
-%bcond_without sctp
-%bcond_without websocket
-%bcond_without xmlrpc
-%endif
 
 %if 0%{?fedora} == 27
 %define dist_name fedora
@@ -49,13 +9,15 @@
 %bcond_with dnssec
 %bcond_without geoip
 %bcond_without http_async_client
+%bcond_without ims
 %bcond_without jansson
 %bcond_without json
 %bcond_without lua
 %bcond_without kazoo
 %bcond_without memcached
+%bcond_without mongodb
 %bcond_without perl
-%bcond_without rebbitmq
+%bcond_without rabbitmq
 %bcond_without redis
 %bcond_without sctp
 %bcond_without websocket
@@ -69,11 +31,13 @@
 %bcond_with dnssec
 %bcond_without geoip
 %bcond_without http_async_client
+%bcond_without ims
 %bcond_without jansson
 %bcond_without json
 %bcond_without lua
 %bcond_without kazoo
 %bcond_without memcached
+%bcond_without mongodb
 %bcond_without perl
 %bcond_without rabbitmq
 %bcond_without redis
@@ -89,11 +53,13 @@
 %bcond_with dnssec
 %bcond_without geoip
 %bcond_without http_async_client
+%bcond_without ims
 %bcond_without jansson
 %bcond_without json
 %bcond_without lua
 %bcond_without kazoo
 %bcond_without memcached
+%bcond_without mongodb
 %bcond_without perl
 %bcond_without rabbitmq
 %bcond_without redis
@@ -109,13 +75,15 @@
 %bcond_without dnssec
 %bcond_without geoip
 %bcond_with http_async_client
+%bcond_without ims
 %bcond_with jansson
 %bcond_with json
 %bcond_without lua
 %bcond_with kazoo
 %bcond_without memcached
+%bcond_with mongodb
 %bcond_without perl
-%bcond_with rebbitmq
+%bcond_with rabbitmq
 %bcond_with redis
 %bcond_without sctp
 %bcond_without websocket
@@ -130,13 +98,15 @@
 %bcond_with dnssec
 %bcond_without geoip
 %bcond_without http_async_client
+%bcond_without ims
 %bcond_without jansson
 %bcond_without json
 %bcond_without lua
 %bcond_without kazoo
 %bcond_without memcached
+%bcond_without mongodb
 %bcond_without perl
-%bcond_without rebbitmq
+%bcond_without rabbitmq
 %bcond_without redis
 %bcond_without sctp
 %bcond_without websocket
@@ -150,13 +120,15 @@
 %bcond_with dnssec
 %bcond_without geoip
 %bcond_without http_async_client
+%bcond_without ims
 %bcond_without jansson
 %bcond_without json
 %bcond_without lua
 %bcond_with kazoo
 %bcond_without memcached
+%bcond_with mongodb
 %bcond_without perl
-%bcond_with rebbitmq
+%bcond_with rabbitmq
 %bcond_without redis
 %bcond_without sctp
 %bcond_without websocket
@@ -170,13 +142,15 @@
 %bcond_without dnssec
 %bcond_with geoip
 %bcond_with http_async_client
+%bcond_with ims
 %bcond_with jansson
 %bcond_with json
 %bcond_with lua
 %bcond_with kazoo
 %bcond_with memcached
+%bcond_with mongodb
 %bcond_with perl
-%bcond_with rebbitmq
+%bcond_with rabbitmq
 %bcond_with redis
 %bcond_with sctp
 %bcond_with websocket
@@ -190,17 +164,24 @@
 %bcond_with dnssec
 %bcond_with geoip
 %bcond_with http_async_client
+%bcond_with ims
 %bcond_with jansson
 %bcond_with json
 %bcond_with lua
 %bcond_with kazoo
 %bcond_with memcached
+%bcond_without mongodb
 %bcond_without perl
-%bcond_without rebbitmq
+%bcond_with rabbitmq
 %bcond_without redis
 %bcond_with sctp
 %bcond_with websocket
 %bcond_without xmlrpc
+%endif
+
+# Defining missing macros on RHEL/CentOS 6
+%if 0%{?rhel} == 6
+%define _rundir %{_localstatedir}/run
 %endif
 
 # redefine buggy openSUSE Leap _sharedstatedir macro. More info at https://bugzilla.redhat.com/show_bug.cgi?id=183370
@@ -227,7 +208,7 @@ Conflicts:  kamailio-ims < %ver, kamailio-java < %ver, kamailio-json < %ver
 Conflicts:  kamailio-lcr < %ver, kamailio-ldap < %ver, kamailio-lua < %ver
 Conflicts:  kamailio-kazoo < %ver
 Conflicts:  kamailio-rabbitmq < %ver
-Conflicts:  kamailio-memcached < %ver, kamailio-mysql < %ver
+Conflicts:  kamailio-memcached < %ver, kamailio-mongodb < %ver, kamailio-mysql < %ver
 Conflicts:  kamailio-outbound < %ver, kamailio-perl < %ver
 Conflicts:  kamailio-postgresql < %ver, kamailio-presence < %ver
 Conflicts:  kamailio-python < %ver
@@ -243,6 +224,12 @@ Conflicts:  kamailio-uuid < %ver
 BuildRequires:  bison, flex
 %if 0%{?suse_version}
 BuildRequires:  systemd-mini, shadow
+%endif
+%if 0%{?fedora} == 27
+BuildRequires:  python3-devel
+%endif
+%if 0%{?fedora} == 28
+BuildRequires:  python3-devel
 %endif
 
 %description
@@ -285,8 +272,13 @@ Requires:   kamailio = %ver
 Requires:   libdb-4_8
 BuildRequires:  libdb-4_8-devel
 %else
+%if 0%{?rhel} == 6
 Requires:   db4
 BuildRequires:  db4-devel
+%else
+Requires:   libdb
+BuildRequires:  libdb-devel
+%endif
 %endif
 
 %description    bdb
@@ -452,6 +444,7 @@ BuildRequires:  libxml2-devel, libcurl-devel, zlib-devel
 This module implements protocol functions that use the libcurl to communicate with HTTP servers. 
 
 
+%if %{with ims}
 %package    ims
 Summary:    IMS modules and extensions module for Kamailio
 Group:      System Environment/Daemons
@@ -460,6 +453,7 @@ BuildRequires:  libxml2-devel libmnl-devel
 
 %description    ims
 IMS modules and extensions module for Kamailio.
+%endif
 
 
 %if %{with jansson}
@@ -537,15 +531,6 @@ BuildRequires:  openldap-devel
 LDAP search interface for Kamailio.
 
 
-%package    log_custom
-Summary:    Logging to custom backends from Kamailio
-Group:      System Environment/Daemons
-Requires:   kamailio = %ver
-
-%description    log_custom
-This module provides logging to custom systems, replacing the default core logging to syslog.
-
-
 %if %{with lua}
 %package    lua
 Summary:    Lua extensions for Kamailio
@@ -567,6 +552,19 @@ BuildRequires:  libmemcached-devel
 
 %description    memcached
 Memcached configuration file support for Kamailio.
+%endif
+
+
+%if %{with mongodb}
+%package    mongodb
+Summary:    MongoDB database connectivity for Kamailio
+Group:      System Environment/Daemons
+Requires:   kamailio = %ver
+Requires:   mongo-c-driver
+BuildRequires:  mongo-c-driver-devel
+
+%description    mongodb
+MongoDB database connectivity for Kamailio.
 %endif
 
 
@@ -944,19 +942,14 @@ UUID module for Kamailio.
 %prep
 %setup -n %{name}-%{ver}
 
-ln -s ../obs pkg/kamailio/fedora/24
-ln -s ../obs pkg/kamailio/fedora/25
-ln -s ../obs pkg/kamailio/fedora/26
 ln -s ../obs pkg/kamailio/fedora/27
 ln -s ../obs pkg/kamailio/fedora/28
 ln -s ../obs pkg/kamailio/fedora/29
-mkdir -p pkg/kamailio/rhel
 ln -s ../obs pkg/kamailio/rhel/6
 ln -s ../obs pkg/kamailio/rhel/7
-mkdir -p pkg/kamailio/opensuse
 ln -s ../obs pkg/kamailio/opensuse/1315
 ln -s ../obs pkg/kamailio/opensuse/1330
-mkdir -p pkg/kamailio/centos
+ln -s ../obs pkg/kamailio/opensuse/1550
 ln -s ../obs pkg/kamailio/centos/6
 ln -s ../obs pkg/kamailio/centos/7
 
@@ -965,7 +958,10 @@ ln -s ../obs pkg/kamailio/centos/7
 %if 0%{?fedora} || 0%{?suse_version}
 export FREERADIUS=1
 %endif
-make cfg prefix=/usr basedir=%{buildroot} cfg_prefix=%{buildroot} doc_prefix=%{buildroot} \
+make cfg prefix=/usr \
+    basedir=%{buildroot} \
+    cfg_prefix=%{buildroot} \
+    doc_prefix=%{buildroot} \
     doc_dir=%{_docdir}/kamailio/ \
     cfg_target=%{_sysconfdir}/kamailio/ modules_dirs="modules"
 make
@@ -989,7 +985,9 @@ make every-module skip_modules="app_mono db_cassandra db_oracle iptrtpproxy \
 %if %{with http_async_client}
     khttp_async \
 %endif
+%if %{with ims}
     kims \
+%endif
 %if %{with jansson}
     kjansson \
 %endif
@@ -1012,6 +1010,9 @@ make every-module skip_modules="app_mono db_cassandra db_oracle iptrtpproxy \
 %endif
 %if %{with xmlrpc}
     kmi_xmlrpc \
+%endif
+%if %{with mongodb}
+    kmongodb \
 %endif
     kmysql koutbound \
 %if %{with perl}
@@ -1058,7 +1059,9 @@ make install-modules-all skip_modules="app_mono db_cassandra db_oracle \
 %if %{with http_async_client}
     khttp_async \
 %endif
+%if %{with ims}
     kims \
+%endif
 %if %{with jansson}
     kjansson \
 %endif
@@ -1081,6 +1084,9 @@ make install-modules-all skip_modules="app_mono db_cassandra db_oracle \
 %endif
 %if %{with xmlrpc}
     kmi_xmlrpc \
+%endif
+%if %{with mongodb}
+    kmongodb \
 %endif
     kmysql koutbound \
 %if %{with perl}
@@ -1135,18 +1141,20 @@ install -m644 pkg/kamailio/%{dist_name}/%{dist_version}/sipcapture.sysconfig \
 %if 0%{?suse_version}
 %py_compile -O %{buildroot}%{_libdir}/kamailio/kamctl/dbtextdb
 %endif
+%if 0%{?fedora}
+%py_byte_compile %{__python2} %{buildroot}%{_libdir}/kamailio/kamctl/dbtextdb
+%endif
 
 # Removing devel files
 rm -f %{buildroot}%{_libdir}/kamailio/lib*.so
 
 %pre
-%if 0%{?suse_version} == 1330
-if ! /usr/bin/getent group daemon &>/dev/null; then
-    /usr/sbin/groupadd --gid 2 daemon &> /dev/null
-fi
-%endif
 if ! /usr/bin/id kamailio &>/dev/null; then
-       /usr/sbin/useradd -r -g daemon -s /bin/false -c "Kamailio daemon" -d %{_libdir}/kamailio kamailio || \
+       /usr/sbin/useradd --system \
+                         --user-group \
+                         --shell /bin/false \
+                         --comment "Kamailio SIP Server" \
+                         --home-dir %{_rundir}/kamailio kamailio || \
                 %logmsg "Unexpected error adding user \"kamailio\". Aborting installation."
 fi
 
@@ -1271,6 +1279,7 @@ fi
 %doc %{_docdir}/kamailio/modules/README.siputils
 %doc %{_docdir}/kamailio/modules/README.sl
 %doc %{_docdir}/kamailio/modules/README.sms
+%doc %{_docdir}/kamailio/modules/README.smsops
 %doc %{_docdir}/kamailio/modules/README.speeddial
 %doc %{_docdir}/kamailio/modules/README.sqlops
 %doc %{_docdir}/kamailio/modules/README.ss7ops
@@ -1304,7 +1313,10 @@ fi
 %doc %{_docdir}/kamailio/modules/README.call_obj
 %doc %{_docdir}/kamailio/modules/README.evrexec
 %doc %{_docdir}/kamailio/modules/README.keepalive
-
+%doc %{_docdir}/kamailio/modules/README.log_custom
+%doc %{_docdir}/kamailio/modules/README.statsc
+%doc %{_docdir}/kamailio/modules/README.topos
+%doc %{_docdir}/kamailio/modules/README.cfgt
 
 %dir %attr(-,kamailio,kamailio) %{_sysconfdir}/kamailio
 %config(noreplace) %{_sysconfdir}/kamailio/dictionary.kamailio
@@ -1418,6 +1430,7 @@ fi
 %{_libdir}/kamailio/modules/siputils.so
 %{_libdir}/kamailio/modules/sl.so
 %{_libdir}/kamailio/modules/sms.so
+%{_libdir}/kamailio/modules/smsops.so
 %{_libdir}/kamailio/modules/speeddial.so
 %{_libdir}/kamailio/modules/sqlops.so
 %{_libdir}/kamailio/modules/ss7ops.so
@@ -1451,7 +1464,10 @@ fi
 %{_libdir}/kamailio/modules/call_obj.so
 %{_libdir}/kamailio/modules/evrexec.so
 %{_libdir}/kamailio/modules/keepalive.so
-
+%{_libdir}/kamailio/modules/log_custom.so
+%{_libdir}/kamailio/modules/statsc.so
+%{_libdir}/kamailio/modules/topos.so
+%{_libdir}/kamailio/modules/cfgt.so
 
 %{_sbindir}/kamailio
 %{_sbindir}/kamctl
@@ -1577,6 +1593,7 @@ fi
 %doc %{_docdir}/kamailio/modules/README.http_client
 %{_libdir}/kamailio/modules/http_client.so
 
+%if %{with ims}
 %files      ims
 %defattr(-,root,root)
 %{_libdir}/kamailio/libkamailio_ims.so.0
@@ -1584,7 +1601,6 @@ fi
 
 %doc %{_docdir}/kamailio/modules/README.cdp
 %doc %{_docdir}/kamailio/modules/README.cdp_avp
-%doc %{_docdir}/kamailio/modules/README.cfgt
 %doc %{_docdir}/kamailio/modules/README.ims_auth
 %doc %{_docdir}/kamailio/modules/README.ims_charging
 %doc %{_docdir}/kamailio/modules/README.ims_dialog
@@ -1596,13 +1612,8 @@ fi
 %doc %{_docdir}/kamailio/modules/README.ims_registrar_pcscf
 %doc %{_docdir}/kamailio/modules/README.ims_registrar_scscf
 %doc %{_docdir}/kamailio/modules/README.ims_usrloc_pcscf
-%doc %{_docdir}/kamailio/modules/README.log_custom
-%doc %{_docdir}/kamailio/modules/README.smsops
-%doc %{_docdir}/kamailio/modules/README.statsc
-%doc %{_docdir}/kamailio/modules/README.topos
 %{_libdir}/kamailio/modules/cdp.so
 %{_libdir}/kamailio/modules/cdp_avp.so
-%{_libdir}/kamailio/modules/cfgt.so
 %{_libdir}/kamailio/modules/ims_auth.so
 %{_libdir}/kamailio/modules/ims_charging.so
 %{_libdir}/kamailio/modules/ims_dialog.so
@@ -1615,10 +1626,8 @@ fi
 %{_libdir}/kamailio/modules/ims_registrar_scscf.so
 %{_libdir}/kamailio/modules/ims_usrloc_pcscf.so
 %{_libdir}/kamailio/modules/ims_usrloc_scscf.so
-%{_libdir}/kamailio/modules/log_custom.so
-%{_libdir}/kamailio/modules/smsops.so
-%{_libdir}/kamailio/modules/statsc.so
-%{_libdir}/kamailio/modules/topos.so
+%endif
+
 
 %if %{with jansson}
 %files      jansson
@@ -1676,6 +1685,16 @@ fi
 %defattr(-,root,root)
 %doc %{_docdir}/kamailio/modules/README.memcached
 %{_libdir}/kamailio/modules/memcached.so
+%endif
+
+
+%if %{with mongodb}
+%files      mongodb
+%defattr(-,root,root)
+%doc %{_docdir}/kamailio/modules/README.db_mongodb
+%doc %{_docdir}/kamailio/modules/README.ndb_mongodb
+%{_libdir}/kamailio/modules/db_mongodb.so
+%{_libdir}/kamailio/modules/ndb_mongodb.so
 %endif
 
 
@@ -1955,6 +1974,8 @@ fi
 
 
 %changelog
+* Sun Nov 04 2018 Sergey Safarov <s.safarov@gmail.com>
+  - removed packaging for Fedora 25, 26 as End Of Life
 * Sat Sep 02 2017 Sergey Safarov <s.safarov@gmail.com>
   - added packaging for Fedora 26 and openSUSE Leap 42.3
   - removed packaging for Fedora 24 and openSUSE Leap 42.1 as End Of Life

@@ -45,9 +45,10 @@
 	<section>
 	<title>How it works</title>
 	<para>
-	To create the dialog associated with an initial request, the flag
-	<quote>dlg_flag</quote> (<xref linkend="dialog.p.flag"/>) must be set before
-	creating the corresponding transaction.
+	To create the dialog associated with an initial INVITE request, execute
+	the function <quote>dlg_manage()</quote> or set the flag specified by
+	parameter <quote>dlg_flag</quote> (<xref linkend="dialog.p.flag"/>)
+	before creating the corresponding transaction.
 	</para>
 	<para>
 	The dialog is automatically destroyed when a <quote>BYE</quote> is
@@ -256,6 +257,12 @@ modparam("dialog", "rr_param", "xyz")
 		current request (this make sense only for initial requests).
 		</para>
 		<para>
+		Note: it is not needed to set this parameter and its corresponding flag
+		for initial request in case the <quote>dlg_manage()</quote> function
+		is used. In other words, using <quote>dlg_manage()</quote> alone is
+		enough.
+		</para>
+		<para>
 		<emphasis>
 			Default value is <quote>none</quote>.
 		</emphasis>
@@ -316,8 +323,8 @@ modparam("dialog", "default_timeout", 21600)
 	<section id="dialog.p.early_timeout">
 		<title><varname>early_timeout</varname> (integer)</title>
 		<para>
-		The timeout (in seconds) after which the dialogs in early state (no
-		final response received) are destroyed.
+		The timeout (in seconds) after which the dialogs in unconfirmed or early
+		state (no final response received) are destroyed.
 		</para>
 		<para>
 		<emphasis>
