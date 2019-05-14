@@ -156,6 +156,7 @@ struct _pv_req_data {
 		unsigned int id;
 		char *buf;
 		int buf_size;
+  msg_ctx_id_t msg_ctx;
 };
 
 static struct _pv_req_data _pv_treq;
@@ -728,6 +729,10 @@ static int w_rx_aar(struct sip_msg *msg, char *route, char* dir, char *c_id, int
 		}
 
 
+                if (t->uas.request->id == _pv_treq.id &&
+                    msg_ctx_id_match(t->uas.request, &_pv_treq.msg_ctx)!=1) {
+		    LM_ERR("This call will fail due to rotten IP in AAR that comes from wrong request\n");
+                }
 		/*  we may need the request message from here on.. if there are headers we need that were not parsed in the original request
 			(which we cannot assume) then we would pollute the shm_msg t->uas.request if we did any parsing on it. Instead, we need to 
 			make a private copy of the message and free it when we are done 
@@ -761,6 +766,7 @@ static int w_rx_aar(struct sip_msg *msg, char *route, char* dir, char *c_id, int
 				_pv_treq.msg.buf = _pv_treq.buf;
 				_pv_treq.tmsgp = t->uas.request;
 				_pv_treq.id = t->uas.request->id;
+                                msg_ctx_id_set(t->uas.request, &_pv_treq.msg_ctx);
 				_pv_treq.T = t;
 
 
