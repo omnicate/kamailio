@@ -252,6 +252,7 @@ AAAMessage *AAANewMessage(
 		//TODO: aon:move this information in the AAASession structure, do not add these fields for
 
 		if (msg->commandCode==Code_CE||msg->commandCode==Code_DP||msg->commandCode==Code_DW ||
+				msg->commandCode==Diameter_MAR || msg->commandCode==Diameter_SAR ||
 				msg->commandCode==Diameter_CCR || msg->commandCode==Diameter_RAR){
 			// Don't add Destination Host/Realm because some stacks are way to picky and will just refuse it
 		}else{
